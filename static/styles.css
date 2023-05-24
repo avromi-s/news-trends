@@ -1,0 +1,247 @@
+* {
+    background-color: #dedede;
+    font-size: 16px;
+    border-radius: 25px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#title, #title_home {
+    background-color: #33485c;
+    border-radius: 25px;
+    width: 100%;
+}
+
+#title > h1, #title_home > h1 {
+    font-size: x-large;
+    color: white;
+    background-color: #33485c;
+}
+
+#title > h2, #title_home > h2 {
+    font-size: larger;
+    color: antiquewhite;
+    background-color: #33485c;
+    font-style: italic;
+}
+
+body {
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+filter {
+    display: flex;
+    flex-direction: column;
+}
+
+input,
+select {
+    border: 0.1rem solid white;
+    border-radius: 25px;
+    padding: 2%;
+    margin-inline: 2%;
+    margin-block: 0.5%;
+    background-color: #53687E;
+    color: #53687E;
+}
+
+input:valid,
+select:valid {
+    color: white;
+}
+
+input::placeholder {
+    color: white;
+}
+
+input:hover,
+select:hover {
+    background-color: white;
+    border: 0.1rem solid #53687E;
+    color: #53687E;
+}
+
+input:hover::placeholder {
+    color: #53687E;
+}
+
+input:active,
+input:focus,
+select:active,
+select:focus {
+    border: 0.1rem solid black;
+    background-color: white;
+    color: #53687E;
+}
+
+input:active::placeholder {
+    color: black;
+}
+
+input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+#search_terms {
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    padding: 5%;
+    border-radius: 25px;
+}
+
+#search_home {
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    padding: 12%;
+    border-radius: 25px;
+}
+
+.search_term {
+    text-indent: 1%;
+    height: 3.5em;
+    width: 100%;
+    font-size: large;
+    box-shadow: 0 0 22px gray;
+}
+
+
+#date_dropdown_filters > div {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#date_dropdown_filter:nth-child(2) {
+    padding: 2%;
+}
+
+#search_in {
+    display: flex;
+    flex-direction: column;
+    margin: 3%;
+}
+
+#results {
+    border: 0.1em solid black;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: row;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.result {
+    width: 33%;
+    /*border: 0.1em solid black;*/
+    padding: 2%;
+    margin: 1% 2%;
+}
+
+#results > * {
+    overflow-x: auto;
+}
+
+.result_articles {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#result_comparison:empty {
+    background-color: #dedede;
+}
+
+#result_comparison > b {
+    background-color: #53687E;
+}
+
+#result_comparison {
+    background-color: #53687E;
+    color: white;
+    padding: 6%;
+    margin: 3%;
+}
+
+.num_occurrences_button, .num_occurrences_button::after {
+    background-color: #7098bf;
+    border: 0.1em solid white;
+    border-radius: 25px;
+    color: white;
+    font-size: medium;
+    padding: 5%;
+}
+
+.num_occurrences_button:hover {
+    border: 0.1em solid #7098bf;
+    background-color: white;
+    border-radius: 25px;
+    color: #7098bf;
+    font-size: medium;
+    padding: 5%;
+}
+
+#explanation_home {
+    width: 65%;
+}
+
+#explanation_home > p {
+    margin: 0;
+}
+
+#search_term_home {
+    width: auto;
+}
+
+#search_button_home, #search_button_home > img {
+    border: none;
+    border-radius: 0;
+    margin: 5%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#search_button_home:hover {
+
+}
+
+@media (min-width: 880px) {
+    /* CSS rules for desktop devices */
+    * {
+        font-size: 16px;
+    }
+
+    p, p > * {
+        font-size: 20px;
+    }
+
+    .search_term {
+        text-indent: 5%;
+    }
+
+    input[type="checkbox"] {
+        transform: scale(1);
+    }
+
+    #date_dropdown_filters {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #date_dropdown_filters > div {
+        flex-direction: row;
+    }
+
+    #search_home {
+        padding: 4%;
+    }
+}
