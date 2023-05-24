@@ -1,0 +1,130 @@
+* {
+    background-color: white;
+    font-size: large;
+    border-radius: 25px;
+}
+
+h1 {
+    font-size: x-large;
+}
+
+body {
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+filter {
+    display: flex;
+    flex-direction: column;
+}
+
+input,
+select {
+    border: 0.1rem solid white;
+    border-radius: 25px;
+    padding: 2%;
+    margin-inline: 2%;
+    margin-block: 0.5%;
+    background-color: #53687E;
+    color: #53687E;
+}
+
+input:valid,
+select:valid {
+    color: white;
+    font-weight: bold;
+}
+
+input::placeholder {
+    color: white;
+}
+
+input:hover,
+select:hover {
+    background-color: white;
+    border: 0.1rem solid #53687E;
+    color: #53687E;
+}
+
+input:hover::placeholder {
+    color: #53687E;
+}
+
+input:active,
+input:focus,
+select:active,
+select:focus {
+    border: 0.1rem solid black;
+    background-color: white;
+    color: #53687E;
+}
+
+input:active::placeholder {
+    color: black;
+}
+
+#search_terms {
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    padding: 5%;
+    border: 2px solid white;
+    border-radius: 25px;
+    background-color: #53687E;
+
+}
+
+.search_term {
+    text-indent: 10%;
+    height: 3.5em;
+    width: 100%;
+    font-size: large;
+    box-shadow: 0 0 20px gray;
+}
+
+#results {
+    border: 0.1em solid black;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: row;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.result {
+    width: 33%;
+    /*border: 0.1em solid black;*/
+    padding: 2%;
+    margin: 1% 2%;
+}
+
+.result_articles {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#result_comparison:empty {
+    background-color: white;
+}
+
+#result_comparison > b {
+    background-color: #53687E;
+}
+
+#result_comparison {
+    background-color: #53687E;
+    color: white;
+    padding: 6%;
+    margin: 3%;
+}
+
+/*
+F5DDDD  - pinkish
+53687E  - grayish
+3A4454  - grayish
+
+718295  - lighter gray can be used in place of pink
+*/
