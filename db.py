@@ -8,7 +8,7 @@ import logging
 # We will store all previous searches so that future searches with the same parameters can just be retrieved from the db instead 
 # of needing to make a duplicate API call. These are stored in the 'news-searches' collection.
 # The number of term occurrences for a given term is also stored so that once it is calculated we do not need to calculate it again.
-# These are stored in a separate collection ('articles') so that searches with overlapping articles can take advantage of any results already calculate.
+# These are stored in a separate collection ('articles') so that searches with overlapping articles can take advantage of any results already calculated.
 
 # Connect to client
 client = pymongo.MongoClient("mongodb://localhost:27017/")
