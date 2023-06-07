@@ -5,27 +5,25 @@
 function getAndDisplayArticlesForTerm(params, term_number) {
     // Retrieve and display the news articles and results (the num of articles, num of term occurrences across pages, and the actual articles).
     // Function uses the specified parameters for the search, and displays the result in the specified term_number result (1 or 2)'s div.
-    // Return a Promise with the number of articles for the search so we can retrieve the value.
-
+    // Return a Promise with the number of articles for the search so that we can retrieve the value.
     return new Promise(function (resolve, reject) {
-
         let result_articles_div = $('#result_' + term_number + '_articles');
         let result_num_articles_div = $('#result_' + term_number + '_num_articles');
         let result_articles_header_div = $('#result_' + term_number + '_articles_header')
         let result_num_occurrences_div = $('#result_' + term_number + '_num_occurrences');
         let result_errors_div = $('#result_' + term_number + '_errors');
 
-        // Clear all previous responses or errors
         result_articles_div.html('Loading...');
 
-        // Make a request to our API to get the news articles.
+        // Get the news articles.
         $.get('/internal/get-articles', params).done(function (data) {
             let response = JSON.parse(data);
             if (response.succeeded) {
                 let number_articles = response.results.values['num_articles'];
                 let articles = response.results.values['articles'];
 
-                resolve(number_articles);  // return the number of articles if succeeded
+                // return the number of articles if succeeded
+                resolve(number_articles);
 
                 result_articles_div.html('');
                 result_num_articles_div.html('<h1>' + params['q'] + '</h1><h2>Number of articles found: ' + number_articles + '</h2>');
@@ -70,8 +68,6 @@ function getAndDisplayArticlesForTerm(params, term_number) {
 ////////////////////// page setup functions \\\\\\\\\\\\\\\\\\\\\\\\
 
 function createDropdown(select_id, options_dict, default_option) {
-    // Add an option for every key-value pair in the given options_dict to the specified select element in the current document.
-    // sets the option with the default value to be selected if it exists in the given values.
     $.each(options_dict, function (value, html) {
         let option = document.createElement('option');
         option.value = value;
@@ -84,7 +80,7 @@ function createDropdown(select_id, options_dict, default_option) {
 }
 
 function validateDates() {
-    // Called when a date is changed. Make sure the date_from date cannot be greater than the date_to date and vice versa.
+    // Called when a date is changed. Makes sure the date_from date cannot be greater than the date_to date and vice versa.
     let date_from = $('#date_from');
     let date_to = $('#date_to');
     date_from.attr('max', date_to.val());
@@ -92,7 +88,6 @@ function validateDates() {
 }
 
 ///////////////////// utility functions \\\\\\\\\\\\\\\\\\\\\
-
 
 function toggle_select_all_checkbox(source) {
     // Called when the 'select all' checkbox is selected. Will check or uncheck all the boxes in the group to match the select all checkbox.
