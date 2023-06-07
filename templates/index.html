@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <title>News Trends</title>
+    <script src='../static/jquery-3.6.3.min.js'></script>
+    <script src='../static/jquery-ui.min.js'></script>
+    <link rel='stylesheet' type='text/css' href='../static/styles.css'>
+</head>
+
+<body>
+<div id='title'>
+    <h1>Enter a search term to see its news relevance</h1>
+</div>
+
+<div id='inputs' class='inputs'>
+    <div id='search_terms'>
+        <input id='search_term_1' class='search_term' placeholder='Enter a term...' required>
+        <input id='search_term_2' class='search_term' placeholder='Enter a term...'>
+    </div>
+
+    <div id='filters'>
+        <div id='dates' class='filter'>
+            <br>
+            <label for='date_from'>&nbspStarting date:</label>
+            <input type='date' id='date_from' name='date_from' onchange='validateDates();'>
+            <br>
+            <label for='date_to'>&nbspEnding date:</label>
+            <input type='date' id='date_to' name='date_to' onchange='validateDates();'>
+            <br><br>
+        </div>
+
+        <div id='dropdowns' class='filter'>
+            <label for='language'>Language:</label>
+            <select name='language' id='language'></select>
+            <br>
+            <label for='country'>Country:</label>
+            <select name='country' id='country'></select>
+            <br>
+            <label for='category'>Category</label>
+            <select name='category' id='category'></select>
+        </div>
+
+        <div id='search_in' class='filter'>
+            <br>
+            <span>Select article location to search:</span>
+            <br>
+            <input type='checkbox' id='search_in_select_all' value='title,description,content' checked='checked'
+                   onclick='toggle_select_all_checkbox(this)'>
+            <label for='search_in_select_all'>Select All</label>
+            <br>
+            <input type='checkbox' name='search_in' id='search_in_title' value='title' checked='checked'
+                   onclick='toggle_checkbox(this)'>
+            <label for='search_in_title'>Article Title</label>
+            <br>
+            <input type='checkbox' name='search_in' id='search_in_description' value='description' checked='checked'
+                   onclick='toggle_checkbox(this)'>
+            <label for='search_in_description'>Article Description</label>
+            <br>
+            <input type='checkbox' name='search_in' id='search_in_content' value='content' checked='checked'
+                   onclick='toggle_checkbox(this)'>
+            <label for='search_in_content'>Article Content</label>
+            <br>
+            <br>
+        </div>
+    </div>
+</div>
+
+<div id='results'>
+    <div id='result_1' class='result'>
+        <div id='result_1_num_articles'></div>
+        <div id='result_1_num_occurrences'></div>
+        <div id='result_1_articles_header'></div>
+        <div id='result_1_articles' class='result_articles'></div>
+        <div id='result_1_errors'></div>
+    </div>
+    <div id='result_comparisons' class='result'>
+        <div id='result_comparison'></div>
+    </div>
+    <div id='result_2' class='result'>
+        <div id='result_2_num_articles'></div>
+        <div id='result_2_num_occurrences'></div>
+        <div id='result_2_articles_header'></div>
+        <div id='result_2_articles' class='result_articles'></div>
+        <div id='result_2_errors'></div>
+    </div>
+    <p id='result_general_errors'></p>
+</div>
+</body>
+
+<script src='../static/home.js'></script>  <!-- Only import JS after html page is loaded. -->
+
+<script>
+    'use strict';
+
+    ///////////// ************************ \\\\\\\\\\\\\
+    ////////////       ON PAGE LOAD        \\\\\\\\\\\\\
+    ///////////// ************************ \\\\\\\\\\\\\
+
+    $(document).ready(function () {
+
+        ///////
+        /// Setup the page
+        ///////
+
+        // Create the dropdown menus:
+        $.get('/internal/get-languages').done(function (data) {
+            // Get the list of languages and create the language dropdown.
+            let languages = JSON.parse(data).results.values;
+            let default_option = 'en';
+            createDropdown('language', languages, default_option);
+        }).fail(function (data) {
+            createDropdown('language', {'err': 'Error'});
+            $('#language').prop('disabled', true);
+        })
+
+
+        $.get('/internal/get-countries').done(function (data) {
+            // Get the list of countries and create the country dropdown.
+            let countries = JSON.parse(data).results.values;
+            let default_option = 'us';
+            createDropdown('country', countries, default_option);
+        }).fail(function (data) {
+            createDropdown('country', {'err': 'Error'});
+            $('#country').prop('disabled', true);
+        })
+
+
+        $.get('/internal/get-categories').done(function (data) {
+            // Get the list of categories and create the categories dropdown.
+            let categories = JSON.parse(data).results.values;
+            let default_option = 'general';
+            createDropdown('category', categories, default_option);
+        }).fail(function (data) {
+            createDropdown('category', {'err': 'Error'});
+            $('#category').prop('disabled', true);
+        })
+
+        // Set the dates:
+        // Set the 'date_from' and 'date_to' fields to the default values of 3 days ago and today, respectively, and
+        // disable dates out of range (anything outside the last month).
+        let today = getLocalDateTime();
+        let three_days_ago = getLocalDateTime();
+        three_days_ago.setDate(three_days_ago.getDate() - 3);
+        let month_ago = getLocalDateTime();
+        month_ago.setMonth(today.getMonth() - 1);
+
+        let date_from_element = $('#date_from')[0];
+        date_from_element.value = three_days_ago.toISOString().split('T')[0];
+        date_from_element.setAttribute('min', month_ago.toISOString().split('T')[0]);  // set min date to 1 month ago
+        date_from_element.setAttribute('max', today.toISOString().split('T')[0]);  // set max date to today
+        let date_to_element = $('#date_to')[0];
+        date_to_element.value = today.toISOString().split('T')[0];
+        date_to_element.setAttribute('min', month_ago.toISOString().split('T')[0]);
+        date_to_element.setAttribute('max', today.toISOString().split('T')[0]);
+
+        ///////
+        /// Finished page setup. 
+        /// Now, we will load or reload results once the user enters valid info or if there is a change detected in any of the inputs.
+        ///////
+
+
+        $('#inputs').on('change', function (event) {
+            // Clear any previous results
+            for (let i = 1; i <= 2; i++) {
+                $('#result_' + i + '_num_articles').html('');
+                $('#result_' + i + '_num_occurrences').html('');
+                $('#result_' + i + '_articles_header').html('');
+                $('#result_' + i + '_articles').html('');
+                $('#result_' + i + '_errors').html('');
+                $('#result_comparison').html('');
+            }
+
+            let search_term_1 = $('#search_term_1').val();
+            let search_term_2 = $('#search_term_2').val();
+
+
+            // If either of the terms are populated then load a new result.
+            if (search_term_1 !== '' || search_term_2 !== '') {
+                // We will do the following to get the result(s):
+                // 1. Collect the search term and associated parameters like dates
+                // 2. Make ajax call to our API to collect the articles for the search
+                // 3. Make a second ajax call to our APi to collect the number of term occurrences (done as a separate call due to wait time)
+
+                let term_params = {};
+
+                // get all checkbox values selected for the search_in field, and join with commas into a string
+                term_params['searchIn'] = $("input[name='search_in']:checked").map(function () {
+                    return $(this).val();
+                }).get().join(',');
+
+                // Collect the dates. If dates are disabled then simply don't send them, they will be set by the server.
+                // Get the dates with their local time offset so that the server can handle the times appropriately.
+                let date_from_val = $('#date_from').val();
+                if (date_from_val !== 'all') {
+                    let date_from = new Date(date_from_val);
+                    term_params['from'] = getISOStringWithLocalOffset(date_from);
+                }
+
+                let date_to_val = $('#date_to').val();
+                if (date_to_val !== 'all') {
+                    let date_to = new Date(date_to_val);
+                    term_params['to'] = getISOStringWithLocalOffset(date_to);
+                }
+
+                // Add language, country, and category filters only if they're not disabled.
+                let language = $('#language').val();
+                if (language !== 'all') {
+                    term_params['language'] = language;
+                }
+
+                let country = $('#country').val();
+                if (country !== 'all') {
+                    term_params['country'] = country;
+                }
+
+                let category = $('#category').val();
+                if (category !== 'all') {
+                    term_params['category'] = category;
+                }
+
+                // Lastly, retrieve and display the results.
+                // Run ajax call and populate page with the results for all terms that are filled in.
+
+                // Store promises returned from the getAndDisplay functions for each term's result so that we can compare the
+                // results from both of them to display which term is more relevant.
+                let comparison_promises = [];
+                if (search_term_1 !== '') {
+                    let params_term_1 = {};
+                    Object.assign(params_term_1, term_params);
+                    params_term_1['q'] = search_term_1;  // API takes 'q' as the search term
+                    comparison_promises[0] = getAndDisplayArticlesForTerm(params_term_1, 1);
+                }
+
+                if (search_term_2 !== '') {
+                    let params_term_2 = {};
+                    Object.assign(params_term_2, term_params);
+                    params_term_2['q'] = search_term_2;
+                    comparison_promises[1] = getAndDisplayArticlesForTerm(params_term_2, 2);
+                }
+
+                // If ALL promises succeeded, then display the comparison. If not, then display nothing. If either of
+                // them failed then log error to the console.
+                Promise.all(comparison_promises).then(function (results) {
+                    if (search_term_1 !== '' && search_term_2 !== '') {
+                        let result_1_val = results[0];
+                        let result_2_val = results[1];
+                        let more_prominent_term = result_1_val === result_2_val ?
+                            'neither term' : result_1_val > result_2_val ?
+                                search_term_1 : search_term_2;
+                        let more_prominent_term_difference = (Math.abs(result_1_val - result_2_val) / (result_1_val + result_2_val) * 100).toFixed(0);
+                        $('#result_comparison').html('<b>' + more_prominent_term + '</b> was more prominent in the news during this time' +
+                            (more_prominent_term === 'neither term' ? '' : ', captivating <b>' + more_prominent_term_difference +
+                                '%</b> more of the news articles.'));
+                    }
+                }).catch(function () {
+                    console.log('error getting search term comparisons locally')
+                })
+
+            }
+        });
+    });
+</script>
+</html>
