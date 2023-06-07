@@ -6,7 +6,7 @@ from requests import Response
 #     This module defines functions for using the news api (newsapi.org)     #
 ##############################################################################
 
-USE_API = False
+USE_API = True
 BASE_URL = 'https://newsapi.org'
 api_key_file = open(r"tokens/newsapiorg_apikey.txt", "r")
 API_KEY = api_key_file.readline()
