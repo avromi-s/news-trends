@@ -34,31 +34,3 @@ def get_articles(params) -> Response:
     url = BASE_URL + endpoint
     result = requests.get(url, headers=headers, params=params)
     return result
-
-
-################################################
-#     Helper newsapi functions     #
-################################################
-
-# Does not take a page argument, that will be handled internally here.
-def get_articles_all_pages(**params) -> Response | None:
-    # Copy arguments and add a page arg
-    arguments = dict(params)
-    arguments['page'] = 1
-    articles = []
-
-    # While we successfully retrieved additional articles and did not yet retrieve all of them: collect the articles and request the next page
-    while True:
-        response = get_articles(arguments)
-        response_content = json.loads(response.content)
-        articles += response_content.get('articles', [])
-        arguments['page'] += 1
-
-        # If the request failed or we are done collecting all articles, then break out of the loop
-        if response.status_code != 200 or len(articles) >= response_content.get('totalResults', float('inf')):
-            break
-
-    if response.status_code == 200:
-        response_content.update({'articles': articles})
-        response._content = json.dumps(response_content)
-    return response

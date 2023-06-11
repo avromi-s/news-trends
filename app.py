@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request
 import json
 from werkzeug.exceptions import HTTPException
-
 import tools
 import db
 
@@ -69,7 +68,7 @@ def get_categories():
     return json.dumps(return_dict)
 
 
-# Return all news articles based on the given parameters
+# Return news articles based on the given parameters. Only returns the first 10 articles, but gives the total number of articles that exist.
 # Expects:
 #   'q' (required)
 #   'from' (an iso string)
@@ -82,49 +81,59 @@ def get_categories():
 # The function will then return the results for the corresponding UTC time range.
 @app.route('/internal/get-articles')
 def get_articles():
-    succeeded = False
-    errors = {}
+    num_articles_to_return = 10
     return_dict = tools.get_template_response_dict(
-        request.base_url, request.args)
+        url=request.base_url, args=request.args)
+    errors = {}
     if len(request.args.get('q', '')) > 0:
-        num_articles_to_return = 10
-        succeeded, result, errors = tools.retrieve_news_search(
-            USE_DB, request.args)
-
-        if succeeded:
-            return_dict['succeeded'] = True
-            return_dict['results']['num_results'] = 2
-            return_dict['results']['values'] = {
-                'num_articles': result.get('totalResults'), 'articles': result.get('articles')[:num_articles_to_return]}
-    if not succeeded:
-        return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
-        return_dict['errors']['message'] = errors.get('message', 'invalid parameters provided: missing parameter \'q\'')
+        succeeded, results, errors = tools.retrieve_news_search(
+            request.args, False, USE_DB)
         return_dict['succeeded'] = succeeded
-    return json.dumps(return_dict)
+        return_dict['errors'] = errors
+        if succeeded:
+            return_dict['num_results'] = 2
+            return_dict['results']['values'] = {'num_articles': results.get('totalResults'),
+                                                'articles': results.get('articles')[:num_articles_to_return]}
+            return json.dumps(return_dict), 200
+        else:
+            return_dict['num_results'] = 0
+            return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
+            return_dict['errors']['message'] = errors.get('message', 'error retrieving news articles')
+            return json.dumps(return_dict), 500
+
+    return_dict['num_results'] = 0
+    return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
+    return_dict['errors']['message'] = errors.get('message', 'invalid input: missing parameter \'q\'')
+    return json.dumps(return_dict), 400
 
 
 # Return the total number of times the term appears on all webpages for a news search.
-# Expects the args used for the news search.
-# The function will look up the list of article urls in the db for the given search parameters, and return the sum of
-# their term counts for the term.
 @app.route('/internal/get-num-term-occurrences')
 def get_num_term_occurrences():
-    # Update the args to match as they are stored in the DB and then retrieve the article urls from the search.
-    args = tools.clean_news_search_args(USE_DB, request.args)
+    return_dict = tools.get_template_response_dict(
+        url=request.base_url, args=request.args)
+    errors = {}
+    if len(request.args.get('q', '')) > 0:
+        succeeded, results, errors = tools.retrieve_news_search(
+            request.args, True, USE_DB)
+        return_dict['succeeded'] = succeeded
+        return_dict['errors'] = errors
+        if succeeded:
+            urls = [article.get('url') for article in results.get('articles')]
+            num_occurrences = tools.num_occurrences_on_pages(USE_DB, request.args.get('q'), urls)
+            return_dict['num_results'] = 1
+            return_dict['results']['values'] = {'num_occurrences': num_occurrences}
+            return json.dumps(return_dict), 200
+        else:
+            return_dict['num_results'] = 0
+            return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
+            return_dict['errors']['message'] = errors.get('message', 'error retrieving num term occurrences')
+            return json.dumps(return_dict), 500
 
-    # This essentially provides data validation because if it doesn't match a db entry, it will be rejected, and we will return an error.
-    results = db.retrieve_news_search(args)
-    if results is not None and 'articles' in results:
-        urls = [article.get('url') for article in results.get('articles')]
-        num_occurrences = tools.num_occurrences_on_pages(USE_DB, args.get('q'), urls)
-        return_dict = tools.get_template_response_dict(
-            request.base_url, request.args, num_results=1, succeeded=True, errors={},
-            results_values={'num_occurrences': num_occurrences})
-    else:
-        return_dict = tools.get_template_response_dict(
-            request.base_url, request.args, num_results=0, succeeded=False,
-            errors={'error_source': 'internal', 'message': 'error retrieving article urls'})
-    return json.dumps(return_dict)
+    return_dict['num_results'] = 0
+    return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
+    return_dict['errors']['message'] = errors.get('message', 'invalid input: missing parameter \'q\'')
+    return json.dumps(return_dict), 400
 
 
 # Source: https://github.com/BeeFriedman/FluxNodeUptimeMonitor/blob/da0f425b5bf64efa62e4d7c05ec1b16df0282dc5/app.py#LL40C6-L40C6

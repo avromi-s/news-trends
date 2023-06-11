@@ -12,39 +12,54 @@ from tldextract import extract
 #     This module defines useful tools for use in the app     #
 ###############################################################
 
-def retrieve_news_search(use_and_update_db: bool, filters: dict) -> tuple[bool, dict, dict]:
-    # Values to return:
+def retrieve_news_search(filters: dict, get_all_pages: bool, use_and_update_db: bool) -> tuple[bool, dict, dict]:
+    filters = clean_news_search_args(use_and_update_db, filters)
+    succeeded, result, errors = get_articles_and_num_total_results(filters, get_all_pages, use_and_update_db)
+    return succeeded, result, errors
+
+
+def get_articles_and_num_total_results(params: dict, get_all_pages: bool, use_and_update_db: bool) -> tuple[bool, dict, dict]:
     succeeded = False
-    result = None
+    result = {}
     errors = {}
 
-    filters = clean_news_search_args(use_and_update_db, filters)
+    # Copy arguments and add a page arg
+    arguments = dict(params)
+    arguments['page'] = 1
+    articles = []
+    total_results = 0
 
-    if use_and_update_db:
-        result = db.retrieve_news_search(filters)
-        succeeded = result is not None
+    while True:
+        if use_and_update_db:
+            succeeded, result = db.retrieve_news_search(arguments)
+            articles += result.get('articles', []) if succeeded else []
+            total_results = result.get('totalResults', total_results) if succeeded else total_results
+        if not succeeded or not use_and_update_db:  # then retrieve results via api
+            response = newsapi.get_articles(arguments)
+            succeeded = response.status_code == 200
+            result = json.loads(response.content)
+            if succeeded:
+                articles += result.get('articles', [])
+                total_results = result.get('totalResults', total_results)
+                if use_and_update_db:
+                    db.insert_new_news_search_and_articles(arguments, result.get('articles', []), total_results)
+            else:
+                errors = {
+                    'error_source': 'external',
+                    'status_code': str(response.status_code),
+                    'message': 'Error retrieving articles. News API status code: ' + str(response.status_code) +
+                               '.\nAPI code: ' + result.get('code') + '. API Message: ' + result.get(
+                        'message')
+                }
+                break
+        if not get_all_pages or len(articles) >= result.get('totalResults', float('inf')):
+            break
+        arguments['page'] += 1
 
-    if not succeeded:
-        response = newsapi.get_articles_all_pages(**filters)
-
-        if response.status_code == 200:
-            content = json.loads(response.content)
-            result = {
-                'articles': content.get('articles', []),
-                'totalResults': content.get('totalResults', 0)
-            }
-            if use_and_update_db:
-                db.insert_new_news_search_and_articles(filters, result['totalResults'], result['articles'])
-            succeeded = True
-        else:
-            news_api_errors = json.loads(response.content)
-            errors = {
-                'error_source': 'external',
-                'status_code': str(response.status_code),
-                'message': 'Error retrieving articles. News API status code: ' + str(response.status_code) +
-                           ".\nAPI code: " + news_api_errors.get('code') + ". API Message: " + news_api_errors.get('message')
-            }
-            succeeded = False
+    result = {
+        'articles': articles,
+        'totalResults': total_results
+    }
     return succeeded, result, errors
 
 
@@ -52,7 +67,7 @@ def retrieve_news_search(use_and_update_db: bool, filters: dict) -> tuple[bool, 
 def retrieve_sources(use_and_update_db: bool, filters: dict) -> tuple[bool, dict, dict]:
     # Values to return:
     succeeded = False
-    result = None
+    result = {}
     errors = {}
 
     if use_and_update_db:
@@ -78,6 +93,7 @@ def retrieve_sources(use_and_update_db: bool, filters: dict) -> tuple[bool, dict
             }
             succeeded = False
     return succeeded, result, errors
+
 
 def clean_news_search_args(use_db: bool, args: dict):
     args = dict(args)
@@ -159,7 +175,7 @@ def get_template_response_dict(url: str = None, args: dict = None, num_results: 
     if args is None:
         args = {}
     if num_results is None:
-        num_results = 0
+        num_results = len(results_values) if results_values is not None else 0
     if succeeded is None:
         succeeded = False
     if errors is None:

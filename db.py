@@ -1,3 +1,4 @@
+import json
 import pymongo
 from datetime import datetime, timedelta
 
@@ -75,65 +76,10 @@ def retrieve_sources_entry(filters: dict) -> list | None:
 #     Functions for handling news-api's news searches     #
 ###########################################################
 
-def retrieve_article(filters: dict, projection: dict = None) -> dict | None:
-    if projection is None:
-        projection = {'_id': 0}
-    return news_db.get_collection('articles').find_one(filters, projection)
-
-
-# Since articles may have already been encountered from a different news search, we only update those with this search's term
-# instead of making a full new entry.
-# Expects:
-#   args - the args used for the search
-#   total_results - the number of results (articles retrieved)
-#   articles - the article objects, which contain the urls as well as the other associating info
-def insert_new_news_search_and_articles(args: dict, total_results: int, articles: list) -> bool:
-    # For the articles, we keep only the url for the db entry in the 'news-searches' collection.
-    # The other article info will be stored separately in the 'articles' collection, along with the number of term occurrences.
-    article_urls = [article.get('url') for article in articles]
-
-    # For the args, we input them as received, except that we make actual date objects for the 'from' and 'to' parameters
-    # so that we can search and index with them more easily.
-    if 'from' in args:
-        args['from'] = datetime.fromisoformat(args['from'])
-    if 'to' in args:
-        args['to'] = datetime.fromisoformat(args['to'])
-
-    news_searches_document = {
-        **args,
-        'totalResults': total_results,
-        'articles': article_urls
-    }
-
-    try:
-        news_search_insertion_succeeded = news_db.get_collection('news-searches').insert_one(
-            news_searches_document).acknowledged
-
-        # Update or insert a new article entry for each article
-        article_insertion_succeeded = True
-        for article in articles:
-            # Filter is set just based on the url as that is what makes an article unique. Also, this way entries
-            # will be updates as time goes on if some of the other data changes.
-            article_filter = {
-                'url': article.get('url', '')
-            }
-
-            # Article is a dict of values, each value needs to be '$set' since we are using update
-            article_update = {
-                '$set': article
-            }
-
-            article_insertion_succeeded = article_insertion_succeeded and update_or_create_entry(
-                'articles', article_filter, article_update)
-        return news_search_insertion_succeeded and article_insertion_succeeded
-    except Exception:
-        return False
-
-
 # Expects the args as would be sent to the newsapi. If max_time_difference_min is greater than 0, the function will try
 # to find a suitable db entry that is within the given number of minutes of the 'from' and 'to' date times, even if it
 # is not an exact match.
-def retrieve_news_search(request_args: dict, max_time_difference_min: int = None) -> dict | None:
+def retrieve_news_search(params: dict, max_time_difference_min: int = None) -> tuple[bool, dict | None]:
     if max_time_difference_min is None:
         max_time_difference_min = MAX_TIME_DIFF_NEWS_RETRIEVAL_MIN
 
@@ -155,7 +101,7 @@ def retrieve_news_search(request_args: dict, max_time_difference_min: int = None
     projection = {'totalResults': 1, 'articles': 1, '_id': 0}
 
     # Replace the 'from' and 'to' date args with actual date objects.
-    filters = dict(request_args)
+    filters = dict(params)
     if 'from' in filters:
         from_date = datetime.fromisoformat(filters['from'])
         lowest_from_date = from_date - timedelta(minutes=max_time_difference_min)
@@ -171,10 +117,62 @@ def retrieve_news_search(request_args: dict, max_time_difference_min: int = None
     result = retrieve_only_with_existing_fields(
         all_fields, 'news-searches', filters, projection)
 
+    succeeded = result is not None
     # Get all articles from each article url, since articles are stored with just the urls in the 'news-searches' collection.
-    if result is not None:
-        article_urls = result.get('articles')
+    if succeeded:
+        article_urls = result.get('articles', [])
         for i, url in enumerate(article_urls):
             article_data = retrieve_article({'url': url})
             result['articles'][i] = article_data
-    return result
+    return succeeded, result
+
+
+def retrieve_article(filters: dict, projection: dict = None) -> dict | None:
+    if projection is None:
+        projection = {'_id': 0}
+    return news_db.get_collection('articles').find_one(filters, projection)
+
+
+# Since articles may have already been encountered from a different news search, we only update those with this search's term
+# instead of making a full new entry.
+# Expects:
+#   args - the args used for the search
+#   total_results - the number of results (articles retrieved)
+#   articles - the article objects, which contain the urls as well as the other associating info
+def insert_new_news_search_and_articles(args: dict, articles: list, total_results: int) -> bool:
+    args = dict(args)
+
+    # For the args, we input them as received, except that we make actual date objects for the 'from' and 'to' parameters
+    # so that we can search and index with them more easily.
+    if 'from' in args:
+        args['from'] = datetime.fromisoformat(args['from'])
+    if 'to' in args:
+        args['to'] = datetime.fromisoformat(args['to'])
+
+    # For the articles, we keep only the url for the db entry in the 'news-searches' collection.
+    # The other article info will be stored separately in the 'articles' collection, along with the number of term occurrences.
+    news_searches_document = {
+        **args,
+        'articles': [article.get('url') for article in articles],
+        'totalResults': total_results
+    }
+
+    news_search_insertion_succeeded = news_db.get_collection('news-searches').insert_one(
+        news_searches_document).acknowledged
+
+    article_insertion_succeeded = True
+    for article in articles:
+        # Filter is set just based on the url as that is what makes an article unique. Also, this way entries
+        # will be updates as time goes on if some of the other data changes.
+        article_filter = {
+            'url': article.get('url', '')
+        }
+
+        # Article is a dict of values, each value needs to be '$set' since we are using update
+        article_update = {
+            '$set': article
+        }
+
+        article_insertion_succeeded = article_insertion_succeeded and update_or_create_entry(
+            'articles', article_filter, article_update)
+    return news_search_insertion_succeeded and article_insertion_succeeded
