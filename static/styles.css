@@ -74,7 +74,6 @@ input:active::placeholder {
     border: 2px solid white;
     border-radius: 25px;
     background-color: #53687E;
-
 }
 
 .search_term {
@@ -119,6 +118,24 @@ input:active::placeholder {
     color: white;
     padding: 6%;
     margin: 3%;
+}
+
+.num_occurrences_button, .num_occurrences_button::after {
+    background-color: #7098bf;
+    border: 0.1em solid white;
+    border-radius: 25px;
+    color: white;
+    font-size: medium;
+    padding: 2.5%;
+}
+
+.num_occurrences_button:hover {
+    border: 0.1em solid #7098bf;
+    background-color: white;
+    border-radius: 25px;
+    color: #7098bf;
+    font-size: medium;
+    padding: 2.5%;
 }
 
 /*

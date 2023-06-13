@@ -10,7 +10,6 @@ function getAndDisplayArticlesForTerm(params, termNumber) {
         let resultArticlesDiv = $('#result_' + termNumber + '_articles');
         let resultNumArticlesDiv = $('#result_' + termNumber + '_num_articles');
         let resultArticlesHeaderDiv = $('#result_' + termNumber + '_articles_header')
-        let resultNumOccurrencesDiv = $('#result_' + termNumber + '_num_occurrences');
         let resultErrorsDiv = $('#result_' + termNumber + '_errors');
 
         resultArticlesDiv.html('Loading...');
@@ -36,20 +35,6 @@ function getAndDisplayArticlesForTerm(params, termNumber) {
                     resultArticlesDiv.append(link);
                     resultArticlesDiv.append('<br>');
                 }
-
-                // After getting and display all articles, display how many times the term occurs across all pages.
-                // This can be a VERY expensive operation because it makes an individual request to every single article url,
-                // but this runs asynchronously so the result will load when we get it back. This way, the articles
-                // that were just found above will display while this result is calculating
-                resultNumOccurrencesDiv.html('Loading the number of occurrences...');
-                $.get('/internal/get-num-term-occurrences', params).done(function (data) {
-                    let response = JSON.parse(data);
-                    let numOccurrences = response.results.values.num_occurrences;
-                    resultNumOccurrencesDiv.html('<b>' + numOccurrences + '</b> matches found across all ' + numberArticles + ' articles.');
-                }).fail(function (data) {
-                    resultNumOccurrencesDiv.html('Error loading the number of occurrences. Please try again later.');
-                    console.log('/internal/get-num-term-occurrences request failed:\n' + data.responseText);
-                })
             } else {
                 resultArticlesDiv.html('');
                 resultErrorsDiv.html('Error loading result. Please try again later.');
@@ -62,6 +47,24 @@ function getAndDisplayArticlesForTerm(params, termNumber) {
             console.log('/internal/get-articles request failed:\n' + data.responseText);
             reject(new Error('failed to retrieve number of articles'));  // if failed then reject
         })
+    })
+}
+
+function getAndDisplayNumOccurencesForTerm(params, termNumber) {
+    // After getting and display all articles, display how many times the term occurs across all pages.
+    // This can be a VERY expensive operation because it makes an individual request to every single article url,
+    // but this runs asynchronously so the result will load when we get it back. This way, the articles
+    // that were just found above will display while this result is calculating
+    let resultNumOccurrencesDiv = $('#result_' + termNumber + '_num_occurrences');
+    resultNumOccurrencesDiv.html('Loading...');
+    $.get('/internal/get-num-term-occurrences', params).done(function (data) {
+        let response = JSON.parse(data);
+        let numOccurrences = response.results.values.num_occurrences;
+        let numArticles = response.results.values.num_articles;
+        resultNumOccurrencesDiv.html('<b>' + numOccurrences + '</b> matches found across all ' + numArticles + ' articles.');
+    }).fail(function (data) {
+        resultNumOccurrencesDiv.html('Error loading the number of occurrences. Please try again later.');
+        console.log('/internal/get-num-term-occurrences request failed:\n' + data.responseText);
     })
 }
 
