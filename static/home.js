@@ -2,89 +2,98 @@
 
 ///////////////////// retrieval functions \\\\\\\\\\\\\\\\\\\\\
 
-function getAndDisplayArticlesForTerm(params, term_number) {
+function getAndDisplayArticlesForTerm(params, termNumber) {
     // Retrieve and display the news articles and results (the num of articles, num of term occurrences across pages, and the actual articles).
-    // Function uses the specified parameters for the search, and displays the result in the specified term_number result (1 or 2)'s div.
+    // Function uses the specified parameters for the search, and displays the result in the specified termNumber result (1 or 2)'s div.
     // Return a Promise with the number of articles for the search so that we can retrieve the value.
     return new Promise(function (resolve, reject) {
-        let result_articles_div = $('#result_' + term_number + '_articles');
-        let result_num_articles_div = $('#result_' + term_number + '_num_articles');
-        let result_articles_header_div = $('#result_' + term_number + '_articles_header')
-        let result_num_occurrences_div = $('#result_' + term_number + '_num_occurrences');
-        let result_errors_div = $('#result_' + term_number + '_errors');
+        let resultArticlesDiv = $('#result_' + termNumber + '_articles');
+        let resultNumArticlesDiv = $('#result_' + termNumber + '_num_articles');
+        let resultArticlesHeaderDiv = $('#result_' + termNumber + '_articles_header')
+        let resultNumOccurrencesDiv = $('#result_' + termNumber + '_num_occurrences');
+        let resultErrorsDiv = $('#result_' + termNumber + '_errors');
 
-        result_articles_div.html('Loading...');
+        resultArticlesDiv.html('Loading...');
 
         // Get the news articles.
         $.get('/internal/get-articles', params).done(function (data) {
             let response = JSON.parse(data);
             if (response.succeeded) {
-                let number_articles = response.results.values['num_articles'];
+                let numberArticles = response.results.values['num_articles'];
                 let articles = response.results.values['articles'];
 
                 // return the number of articles if succeeded
-                resolve(number_articles);
+                resolve(numberArticles);
 
-                result_articles_div.html('');
-                result_num_articles_div.html('<h1>' + params['q'] + '</h1><h2>Number of articles found: ' + number_articles + '</h2>');
-                result_articles_header_div.html('<h4>Latest Articles from Search:</h4>');
+                resultArticlesDiv.html('');
+                resultNumArticlesDiv.html('<h1>' + params['q'] + '</h1><h2>Number of articles found: ' + numberArticles + '</h2>');
+                resultArticlesHeaderDiv.html('<h4>Latest Articles from Search:</h4>');
 
                 for (let article of articles) {
                     let link = $('<a>');
                     link.attr('href', article.url);
                     link.html(article.source.name + ': ' + article.title);
-                    result_articles_div.append(link);
-                    result_articles_div.append('<br>');
+                    resultArticlesDiv.append(link);
+                    resultArticlesDiv.append('<br>');
                 }
 
                 // After getting and display all articles, display how many times the term occurs across all pages.
                 // This can be a VERY expensive operation because it makes an individual request to every single article url,
                 // but this runs asynchronously so the result will load when we get it back. This way, the articles
                 // that were just found above will display while this result is calculating
-                result_num_occurrences_div.html('Loading the number of occurrences...');
+                resultNumOccurrencesDiv.html('Loading the number of occurrences...');
                 $.get('/internal/get-num-term-occurrences', params).done(function (data) {
                     let response = JSON.parse(data);
-                    let num_occurrences = response.results.values.num_occurrences;
-                    result_num_occurrences_div.html('<b>' + num_occurrences + '</b> matches found across all ' + number_articles + ' articles.');
+                    let numOccurrences = response.results.values.num_occurrences;
+                    resultNumOccurrencesDiv.html('<b>' + numOccurrences + '</b> matches found across all ' + numberArticles + ' articles.');
                 }).fail(function (data) {
-                    result_num_occurrences_div.html('Error loading the number of occurrences. Please try again later.');
+                    resultNumOccurrencesDiv.html('Error loading the number of occurrences. Please try again later.');
                     console.log('/internal/get-num-term-occurrences request failed:\n' + data.responseText);
                 })
             } else {
-                result_articles_div.html('');
-                result_errors_div.html('Error loading result. Please try again later.');
+                resultArticlesDiv.html('');
+                resultErrorsDiv.html('Error loading result. Please try again later.');
                 console.log('/internal/get-articles request failed:\n' + response.errors.error_source + ' error retrieving articles.\nMessage: ' + response.errors.message)
                 reject(new Error('failed to retrieve number of articles'));  // if failed then reject
             }
         }).fail(function (data) {
-            result_articles_div.html('');
-            result_errors_div.html('Error loading result. Please try again later.');
+            resultArticlesDiv.html('');
+            resultErrorsDiv.html('Error loading result. Please try again later.');
             console.log('/internal/get-articles request failed:\n' + data.responseText);
             reject(new Error('failed to retrieve number of articles'));  // if failed then reject
         })
     })
 }
 
+function clearTermResults(resultNum) {
+    $('#result_' + resultNum + '_num_articles').html('');
+    $('#result_' + resultNum + '_num_occurrences').html('');
+    $('#result_' + resultNum + '_articles_header').html('');
+    $('#result_' + resultNum + '_articles').html('');
+    $('#result_' + resultNum + '_errors').html('');
+    $('#result_comparison').html('');
+}
+
 ////////////////////// page setup functions \\\\\\\\\\\\\\\\\\\\\\\\
 
-function createDropdown(select_id, options_dict, default_option) {
-    $.each(options_dict, function (value, html) {
+function createDropdown(selectId, optionsDict, defaultOption) {
+    $.each(optionsDict, function (value, html) {
         let option = document.createElement('option');
         option.value = value;
         option.innerHTML = html;
-        if (value === default_option) {
+        if (value === defaultOption) {
             option.selected = true;
         }
-        $('#' + select_id).append(option);
+        $('#' + selectId).append(option);
     })
 }
 
 function validateDates() {
-    // Called when a date is changed. Makes sure the date_from date cannot be greater than the date_to date and vice versa.
-    let date_from = $('#date_from');
-    let date_to = $('#date_to');
-    date_from.attr('max', date_to.val());
-    date_to.attr('min', date_from.val());
+    // Called when a date is changed. Makes sure the dateFrom date cannot be greater than the dateTo date and vice versa.
+    let dateFrom = $('#dateFrom');
+    let dateTo = $('#dateTo');
+    dateFrom.attr('max', dateTo.val());
+    dateTo.attr('min', dateFrom.val());
 }
 
 ///////////////////// utility functions \\\\\\\\\\\\\\\\\\\\\
@@ -100,31 +109,31 @@ function toggle_select_all_checkbox(source) {
 function toggle_checkbox() {
     // Called when any of the checkboxes except the 'select all' box is selected. Will update the select all checkbox in case all checkboxes
     // are now checked and the all box is not checked, or vice versa.
-    let select_all_box = $('#search_in_select_all')[0];
-    let all_other_boxes_are_checked = true;
+    let selectAllBox = $('#search_in_select_all')[0];
+    let allOtherBoxesAreChecked = true;
     let checkboxes = $("input[name='search_in']");
     for (let i = 0, n = checkboxes.length; i < n; i++) {
         if (!checkboxes[i].checked) {
-            all_other_boxes_are_checked = false;
+            allOtherBoxesAreChecked = false;
             break;
         }
     }
-    if (all_other_boxes_are_checked && !select_all_box.checked) {
-        select_all_box.checked = true;
-    } else if (!all_other_boxes_are_checked && select_all_box.checked) {
-        select_all_box.checked = false;
+    if (allOtherBoxesAreChecked && !selectAllBox.checked) {
+        selectAllBox.checked = true;
+    } else if (!allOtherBoxesAreChecked && selectAllBox.checked) {
+        selectAllBox.checked = false;
     }
 }
 
 function getISOStringWithLocalOffset(date) {
     // Return the given date as an ISO string, with the SAME time, but with the local offset.
-    let time_zone_offset = -date.getTimezoneOffset(),
-        diff = time_zone_offset >= 0 ? '+' : '-',
+    let timeZoneOffset = -date.getTimezoneOffset(),
+        diff = timeZoneOffset >= 0 ? '+' : '-',
         pad = function (num) {
             return (num < 10 ? '0' : '') + num;
         };
-    let offset_str = diff + pad(Math.floor(Math.abs(time_zone_offset) / 60)) +
-        ':' + pad(Math.abs(time_zone_offset) % 60);
+    let offset_str = diff + pad(Math.floor(Math.abs(timeZoneOffset) / 60)) +
+        ':' + pad(Math.abs(timeZoneOffset) % 60);
     return date.toISOString().replace('Z', offset_str);
 }
 
