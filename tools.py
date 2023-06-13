@@ -19,6 +19,7 @@ def retrieve_news_search(filters: dict, get_all_pages: bool, use_and_update_db: 
 
 
 def get_articles_and_num_total_results(params: dict, get_all_pages: bool, use_and_update_db: bool) -> tuple[bool, dict, dict]:
+    max_total_results = 500
     succeeded = False
     result = {}
     errors = {}
@@ -52,6 +53,14 @@ def get_articles_and_num_total_results(params: dict, get_all_pages: bool, use_an
                         'message')
                 }
                 break
+        if get_all_pages and total_results >= max_total_results:
+            succeeded = False
+            errors = {
+                'error_source': 'external',
+                'status_code': 426,
+                'message': 'Unable to collect articles for search with over ' + str(max_total_results) + ' results'
+            }
+            break
         if not get_all_pages or len(articles) >= result.get('totalResults', float('inf')):
             break
         arguments['page'] += 1

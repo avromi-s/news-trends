@@ -91,7 +91,7 @@ def get_articles():
         return_dict['succeeded'] = succeeded
         return_dict['errors'] = errors
         if succeeded:
-            return_dict['num_results'] = 2
+            return_dict['results']['num_results'] = 2
             return_dict['results']['values'] = {'num_articles': results.get('totalResults'),
                                                 'articles': results.get('articles')[:num_articles_to_return]}
             return json.dumps(return_dict), 200
@@ -101,7 +101,7 @@ def get_articles():
             return_dict['errors']['message'] = errors.get('message', 'error retrieving news articles')
             return json.dumps(return_dict), 500
 
-    return_dict['num_results'] = 0
+    return_dict['results']['num_results'] = 0
     return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
     return_dict['errors']['message'] = errors.get('message', 'invalid input: missing parameter \'q\'')
     return json.dumps(return_dict), 400
@@ -121,16 +121,16 @@ def get_num_term_occurrences():
         if succeeded:
             urls = [article.get('url') for article in results.get('articles')]
             num_occurrences = tools.num_occurrences_on_pages(USE_DB, request.args.get('q'), urls)
-            return_dict['num_results'] = 1
+            return_dict['results']['num_results'] = 1
             return_dict['results']['values'] = {'num_occurrences': num_occurrences}
             return json.dumps(return_dict), 200
         else:
-            return_dict['num_results'] = 0
+            return_dict['results']['num_results'] = 0
             return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
             return_dict['errors']['message'] = errors.get('message', 'error retrieving num term occurrences')
             return json.dumps(return_dict), 500
 
-    return_dict['num_results'] = 0
+    return_dict['results']['num_results'] = 0
     return_dict['errors']['error_source'] = errors.get('error_source', 'internal')
     return_dict['errors']['message'] = errors.get('message', 'invalid input: missing parameter \'q\'')
     return json.dumps(return_dict), 400
