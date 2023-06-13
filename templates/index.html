@@ -217,22 +217,42 @@
                 // Store promises returned from the getAndDisplay functions for each term's result so that we can compare the
                 // results from both of them to display which term is more relevant.
                 let comparisonPromises = [];
+                let paramsTerm1 = {};
+                let paramsTerm2 = {};
                 if (searchTerm1 !== '') {
-                    let params = {};
-                    Object.assign(params, termParams);
-                    params['q'] = searchTerm1;  // API takes 'q' as the search term
-                    comparisonPromises[0] = getAndDisplayArticlesForTerm(params, 1);
+                    Object.assign(paramsTerm1, termParams);
+                    paramsTerm1['q'] = searchTerm1;  // API takes 'q' as the search term
+                    comparisonPromises[0] = getAndDisplayArticlesForTerm(paramsTerm1, 1);
                 }
 
                 if (searchTerm2 !== '') {
-                    let params = {};
-                    Object.assign(params, termParams);
-                    params['q'] = searchTerm2;
-                    comparisonPromises[1] = getAndDisplayArticlesForTerm(params, 2);
+                    Object.assign(paramsTerm2, termParams);
+                    paramsTerm2['q'] = searchTerm2;
+                    comparisonPromises[1] = getAndDisplayArticlesForTerm(paramsTerm2, 2);
                 }
 
-                // If ALL promises succeeded, then display the comparison. If not, then display nothing. If either of
-                // them failed then log error to the console.
+                // When each term's article results come in, load a button for getting the num term occurrences
+                Promise.resolve(comparisonPromises[0]).then(function (results) {
+                    if (searchTerm1 !== '') {
+                        $('#result_1_num_occurrences').html("<button type='button' id='result_1_get_num_occurrences'" +
+                            "class='num_occurrences_button'>Load the number of times the term occurs across all pages</button>");
+                        $('#result_1_get_num_occurrences').on('click', function (event) {
+                            getAndDisplayNumOccurencesForTerm(paramsTerm1, 1);
+                        });
+                    }
+                })
+
+                Promise.resolve(comparisonPromises[1]).then(function (results) {
+                    if (searchTerm2 !== '') {
+                        $('#result_2_num_occurrences').html("<button type='button' id='result_2_get_num_occurrences'" +
+                            "class='num_occurrences_button'>Load the number of times the term occurs across all pages</button>");
+                        $('#result_2_get_num_occurrences').on('click', function (event) {
+                            getAndDisplayNumOccurencesForTerm(paramsTerm2, 2);
+                        });
+                    }
+                })
+
+                // When both articles results come in, display the comparison. If either of them failed then log error to the console.
                 Promise.all(comparisonPromises).then(function (results) {
                     if (searchTerm1 !== '' && searchTerm2 !== '') {
                         let result1Val = results[0];
