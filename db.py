@@ -1,16 +1,26 @@
-import json
-import pymongo
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 from datetime import datetime, timedelta
 
 # This module defines functions for interacting with our MongoDB database #
 # The basic utility of the db is to store previously received or calculated results, to reduce the necessary number of API calls
-# to the news api as well as to increase speed. 
-# We will store all previous searches so that future searches with the same parameters can just be retrieved from the db instead 
+# to the news api as well as to increase speed.
+# We will store all previous searches so that future searches with the same parameters can just be retrieved from the db instead
 # of needing to make a duplicate API call. These are stored in the 'news-searches' collection.
 # The number of term occurrences for a given term is also stored so that once it is calculated we do not need to calculate it again.
 # These are stored in a separate collection ('articles') so that searches with overlapping articles can take advantage of any results already calculate.
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+uri_file = open(r"tokens/mongodb_uri.txt", "r")
+uri = uri_file.readline()
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Successfully connected to MongoDB.")
+except Exception as e:
+    print(e)
+
 news_db = client.newsDB
 
 # Max we are willing to accept when retrieving a news-search from the db
