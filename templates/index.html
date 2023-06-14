@@ -6,6 +6,7 @@
     <script src='../static/jquery-3.6.3.min.js'></script>
     <script src='../static/jquery-ui.min.js'></script>
     <link rel='stylesheet' type='text/css' href='../static/styles.css'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
@@ -88,7 +89,7 @@
 </div>
 </body>
 
-<script src='../static/home.js'></script>  <!-- Only import JS after html page is loaded. -->
+<script src='../static/script.js'></script>  <!-- Only import JS after html page is loaded. -->
 
 <script>
     'use strict';
@@ -257,13 +258,15 @@
                     if (searchTerm1 !== '' && searchTerm2 !== '') {
                         let result1Val = results[0];
                         let result2Val = results[1];
+                        let lowerTermResultVal = result1Val > result2Val ? result2Val : result1Val;
+                        let higherTermResultVal = result1Val > result2Val ? result1Val : result2Val;
                         let moreProminentTerm = result1Val === result2Val ?
                             'neither term' : result1Val > result2Val ?
                                 searchTerm1 : searchTerm2;
-                        let moreProminentTermDifference = ((Math.abs(result1Val - result2Val) / Math.abs(result1Val + result2Val)) * 100).toFixed(0);
+                        let moreProminentTermDifference = (((higherTermResultVal - lowerTermResultVal) / lowerTermResultVal) * 100).toFixed(0);
                         $('#result_comparison').html('<b>' + moreProminentTerm + '</b> was more prominent in the news during this time' +
-                            (moreProminentTerm === 'neither term' ? '' : ', captivating <b>' + moreProminentTermDifference +
-                                '%</b> more of the news articles.'));
+                            (moreProminentTerm === 'neither term' ? '' : ', with <b>' + moreProminentTermDifference +
+                                '%</b> more news articles.'));
                     }
                 }).catch(function () {
                     console.log('error getting search term comparisons locally')
