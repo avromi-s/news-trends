@@ -122,7 +122,8 @@ def get_num_term_occurrences():
             urls = [article.get('url') for article in results.get('articles')]
             num_occurrences = tools.num_occurrences_on_pages(USE_DB, request.args.get('q'), urls)
             return_dict['results']['num_results'] = 1
-            return_dict['results']['values'] = {'num_occurrences': num_occurrences, 'num_articles': results.get('totalResults', -1)}
+            return_dict['results']['values'] = {'num_occurrences': num_occurrences,
+                                                'num_articles': results.get('totalResults', -1)}
             return json.dumps(return_dict), 200
         else:
             return_dict['results']['num_results'] = 0
