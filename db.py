@@ -24,7 +24,7 @@ except Exception as e:
 news_db = client.newsDB
 
 # Max we are willing to accept when retrieving a news-search from the db
-MAX_TIME_DIFF_NEWS_RETRIEVAL_MIN = 60
+MAX_TIME_DIFF_NEWS_RETRIEVAL_MIN = 720
 
 
 ###############################
