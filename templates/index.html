@@ -21,48 +21,46 @@
     </div>
 
     <div id='filters'>
-        <div id='dates' class='filter'>
-            <br>
-            <label for='date_from'>&nbspStarting date:</label>
-            <input type='date' id='date_from' name='date_from' onchange='validateDates();'>
-            <br>
-            <label for='date_to'>&nbspEnding date:</label>
-            <input type='date' id='date_to' name='date_to' onchange='validateDates();'>
-            <br><br>
-        </div>
+        <div id='date_dropdown_filters'>
+            <div id='dates' class='filter'>
+                <label for='date_from'>&nbspStarting date:</label>
+                <input type='date' id='date_from' name='date_from' onchange='validateDates();'>
+                <label for='date_to'>&nbspEnding date:</label>
+                <input type='date' id='date_to' name='date_to' onchange='validateDates();'>
+            </div>
 
-        <div id='dropdowns' class='filter'>
-            <label for='language'>Language:</label>
-            <select name='language' id='language'></select>
-            <br>
-            <label for='country'>Country:</label>
-            <select name='country' id='country'></select>
-            <br>
-            <label for='category'>Category</label>
-            <select name='category' id='category'></select>
+            <div id='dropdowns' class='filter'>
+                <label for='language'>Language:</label>
+                <select name='language' id='language'></select>
+                <label for='country'>Country:</label>
+                <select name='country' id='country'></select>
+                <label for='category'>Category</label>
+                <select name='category' id='category'></select>
+            </div>
         </div>
 
         <div id='search_in' class='filter'>
-            <br>
             <span>Select article location to search:</span>
-            <br>
-            <input type='checkbox' id='search_in_select_all' value='title,description,content' checked='checked'
-                   onclick='toggle_select_all_checkbox(this)'>
-            <label for='search_in_select_all'>Select All</label>
-            <br>
-            <input type='checkbox' name='search_in' id='search_in_title' value='title' checked='checked'
-                   onclick='toggle_checkbox(this)'>
-            <label for='search_in_title'>Article Title</label>
-            <br>
-            <input type='checkbox' name='search_in' id='search_in_description' value='description' checked='checked'
-                   onclick='toggle_checkbox(this)'>
-            <label for='search_in_description'>Article Description</label>
-            <br>
-            <input type='checkbox' name='search_in' id='search_in_content' value='content' checked='checked'
-                   onclick='toggle_checkbox(this)'>
-            <label for='search_in_content'>Article Content</label>
-            <br>
-            <br>
+            <div>
+                <input type='checkbox' id='search_in_select_all' value='title,description,content' checked='checked'
+                       onclick='toggle_select_all_checkbox(this)'>
+                <label for='search_in_select_all'>All</label>
+            </div>
+            <div>
+                <input type='checkbox' name='search_in' id='search_in_title' value='title' checked='checked'
+                       onclick='toggle_checkbox(this)'>
+                <label for='search_in_title'>Title</label>
+            </div>
+            <div>
+                <input type='checkbox' name='search_in' id='search_in_description' value='description' checked='checked'
+                       onclick='toggle_checkbox(this)'>
+                <label for='search_in_description'>Description</label>
+            </div>
+            <div>
+                <input type='checkbox' name='search_in' id='search_in_content' value='content' checked='checked'
+                       onclick='toggle_checkbox(this)'>
+                <label for='search_in_content'>Content</label>
+            </div>
         </div>
     </div>
 </div>
@@ -264,9 +262,9 @@
                             'neither term' : result1Val > result2Val ?
                                 searchTerm1 : searchTerm2;
                         let moreProminentTermDifference = (((higherTermResultVal - lowerTermResultVal) / lowerTermResultVal) * 100).toFixed(0);
-                        $('#result_comparison').html('<b>' + moreProminentTerm + '</b> was more prominent in the news during this time' +
-                            (moreProminentTerm === 'neither term' ? '' : ', with <b>' + moreProminentTermDifference +
-                                '%</b> more news articles.'));
+                        $('#result_comparison').html('<b>' + moreProminentTerm + '</b> was found in '  +
+                            (moreProminentTerm === 'neither term' ? '' : moreProminentTermDifference +
+                                '%</b>') + ' more news articles.');
                     }
                 }).catch(function () {
                     console.log('error getting search term comparisons locally')
