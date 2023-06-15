@@ -25,8 +25,8 @@ function getAndDisplayArticlesForTerm(params, termNumber) {
                 resolve(numberArticles);
 
                 resultArticlesDiv.html('');
-                resultNumArticlesDiv.html('<h1>' + params['q'] + '</h1><h2>Number of articles found: ' + numberArticles + '</h2>');
-                resultArticlesHeaderDiv.html('<h4>Latest Articles from Search:</h4>');
+                resultNumArticlesDiv.html('<h1>' + params['q'] + '</h1><h2>Articles: ' + numberArticles + '</h2>');
+                resultArticlesHeaderDiv.html('<h4>Latest Articles:</h4>');
 
                 for (let article of articles) {
                     let link = $('<a>');
