@@ -1,11 +1,20 @@
 * {
-    background-color: white;
-    font-size: large;
+    background-color: #dedede;
+    font-size: 16px;
     border-radius: 25px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-h1 {
+#title {
+    background-color: #33485c;
+    border-radius: 25px;
+    width: 100%;
+}
+
+#title > h1 {
     font-size: x-large;
+    color: white;
+    background-color: #33485c;
 }
 
 body {
@@ -35,7 +44,6 @@ select {
 input:valid,
 select:valid {
     color: white;
-    font-weight: bold;
 }
 
 input::placeholder {
@@ -66,22 +74,45 @@ input:active::placeholder {
     color: black;
 }
 
+input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
 #search_terms {
     display: flex;
     margin: auto;
     justify-content: center;
     padding: 5%;
-    border: 2px solid white;
     border-radius: 25px;
-    background-color: #53687E;
+    /* background-color: #d8d8d8; */
+    /* width: auto; */
 }
 
 .search_term {
-    text-indent: 10%;
+    text-indent: 1%;
     height: 3.5em;
     width: 100%;
     font-size: large;
-    box-shadow: 0 0 20px gray;
+    box-shadow: 0 0 22px gray;
+}
+
+
+#date_dropdown_filters > div {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#date_dropdown_filter:nth-child(2) {
+    padding: 2%;
+}
+
+#search_in {
+    display: flex;
+    flex-direction: column;
+    margin: 3%;
 }
 
 #results {
@@ -98,6 +129,10 @@ input:active::placeholder {
     /*border: 0.1em solid black;*/
     padding: 2%;
     margin: 1% 2%;
+}
+
+#results > * {
+    overflow-x: auto;
 }
 
 .result_articles {
@@ -126,7 +161,7 @@ input:active::placeholder {
     border-radius: 25px;
     color: white;
     font-size: medium;
-    padding: 2.5%;
+    padding: 5%;
 }
 
 .num_occurrences_button:hover {
@@ -135,13 +170,30 @@ input:active::placeholder {
     border-radius: 25px;
     color: #7098bf;
     font-size: medium;
-    padding: 2.5%;
+    padding: 5%;
 }
 
-/*
-F5DDDD  - pinkish
-53687E  - grayish
-3A4454  - grayish
+@media (min-width: 880px) {
+    /* CSS rules for mobile or tablet devices */
+    * {
+        font-size: 16px;
+    }
 
-718295  - lighter gray can be used in place of pink
-*/
+    .search_term {
+        text-indent: 5%;
+    }
+
+    input[type="checkbox"] {
+        transform: scale(1);
+    }
+
+    #date_dropdown_filters {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #date_dropdown_filters > div {
+        flex-direction: row;
+    }
+}
