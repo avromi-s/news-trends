@@ -230,6 +230,7 @@ def num_occurrences_on_pages(use_and_update_db: bool, term: str, urls: list) -> 
 # If there is an error in retrieving the page, then return -1.
 # The search is not case-sensitive.
 def get_num_occurrences_on_page(use_and_update_db: bool, term: str, url: str) -> int:
+    term = term.lower()
     succeeded = False
 
     if use_and_update_db:

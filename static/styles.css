@@ -17,6 +17,13 @@
     background-color: #33485c;
 }
 
+#title > h2 {
+    font-size: larger;
+    color: antiquewhite;
+    background-color: #33485c;
+    font-style: italic;
+}
+
 body {
     display: flex;
     text-align: center;
@@ -84,8 +91,14 @@ input[type="checkbox"] {
     justify-content: center;
     padding: 5%;
     border-radius: 25px;
-    /* background-color: #d8d8d8; */
-    /* width: auto; */
+}
+
+#search_terms_home {
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    padding: 12%;
+    border-radius: 25px;
 }
 
 .search_term {
@@ -141,7 +154,7 @@ input[type="checkbox"] {
 }
 
 #result_comparison:empty {
-    background-color: white;
+    background-color: #dedede;
 }
 
 #result_comparison > b {
@@ -173,10 +186,22 @@ input[type="checkbox"] {
     padding: 5%;
 }
 
+#explanation {
+    width: 65%;
+}
+
+#explanation > p {
+    margin: 0;
+}
+
 @media (min-width: 880px) {
-    /* CSS rules for mobile or tablet devices */
+    /* CSS rules for desktop devices */
     * {
         font-size: 16px;
+    }
+
+    p, p > * {
+        font-size: 20px;
     }
 
     .search_term {
@@ -195,5 +220,9 @@ input[type="checkbox"] {
 
     #date_dropdown_filters > div {
         flex-direction: row;
+    }
+
+    #search_terms_home {
+        padding: 4%;
     }
 }
