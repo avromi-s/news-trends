@@ -1,39 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
     <title>News Trends</title>
     <script src='../static/jquery-3.6.3.min.js'></script>
     <link rel='stylesheet' type='text/css' href='../static/styles.css'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
 <body>
-<div id='title'>
+<div id='title_home'>
     <h1>Ever wonder what is really covered more in the news?</h1>
-    <h2 id="subtitle">Now you can find out!</h2>
+    <h2>Now you can find out!</h2>
 </div>
-<div id='search_terms_home'>
-    <input id='search_term' class='search_term' placeholder='Enter a term...' required>
+<div id='search_home'>
+    <input id='search_term_home' class='search_term' placeholder='Enter a term...' required>
+    <div id='search_button_home'><img id='search_button_home_img' src='/static/search_icon_33485c.png' alt='Search!'/>
+    </div>
 </div>
-<div id="explanation">
+<div id='explanation_home'>
     <p>
         <b>News Trends</b> allows you to check how frequently any keyword
         appeared in news articles over the last month:
     </p>
     <p>
-        <br>• Simply type in your keyword and hit enter<br>• You can also search for
-        a second keyword to compare results (available on the <a href="search">next page</a>)
+        <br>• Simply type in your keyword and search<br>• You can also search for
+        a second keyword to compare results (available on the <a href='search'>next page</a>)
     </p>
 </div>
 </body>
 </html>
 
 <script>
-    $('#search_term').on('change', function () {
-        let searchTerm = $('#search_term').val();
+    'use strict';
+
+    let search_button_img = $('#search_button_home_img');
+    search_button_img.hover(function () {
+        search_button_img.attr('src', '/static/search_icon_white.png');
+    }, function () {
+        search_button_img.attr('src', '/static/search_icon_33485c.png');
+    });
+
+    function loadSearchPage(searchTerm) {
         if (searchTerm !== '') {
             window.location.href = 'search?term1=' + searchTerm;
         } else {
-            alert('Please enter a keyword')
+            alert('Please enter a keyword');
+        }
+    }
+
+    $('#search_button_home').on('click', function () {
+        loadSearchPage($('#search_term_home').val());
+    });
+
+    $('#search_term_home').keypress(function (e) {
+        // if enter is pressed
+        if (e.which === 13 || e.keyCode === 13) {
+            loadSearchPage($('#search_term_home').val());
         }
     });
 </script>
